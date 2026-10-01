@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Modern Calculator</title>
+
+    <style>
+
+        /* =========================
+           CSS
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            font-family: Arial, sans-serif;
+
+            background: linear-gradient(
+                135deg,
+                #0f172a,
+                #1e1b4b
+            );
+
+            color: white;
+        }
+
+        .calculator {
+            width: 350px;
+            padding: 20px;
+
+            background: #111827;
+
+            border-radius: 25px;
+
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(56, 189, 248, 0.1);
+        }
+
+        .title {
+            text-align: center;
+            color: #38bdf8;
+            margin-bottom: 15px;
+        }
+
+        .display {
+            height: 120px;
+
+            padding: 20px;
+            margin-bottom: 15px;
+
+            display: flex;
+            flex-direction: column;
+
+            justify-content: flex-end;
+            align-items: flex-end;
+
+            background: #020617;
+
+            border-radius: 15px;
+
+            overflow: hidden;
+        }
+
+        #previous {
+            min-height: 25px;
+
+            color: #94a3b8;
+
+            font-size: 18px;
+        }
+
+        #current {
+            width: 100%;
+
+            color: white;
+
+            font-size: 40px;
+
+            text-align: right;
+
+            overflow: hidden;
+        }
+
+        .buttons {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 10px;
+        }
+
+        button {
+            height: 65px;
+
+            border: none;
+
+            border-radius: 15px;
+
+            background: #1e293b;
+
+            color: white;
+
+            font-size: 21px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #334155;
+
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .special {
+            background: #334155;
+            color: #38bdf8;
+        }
+
+        .operator {
+            background: #2563eb;
+        }
+
+        .operator:hover {
+            background: #1d4ed8;
+        }
+
+        .equal {
+            background: #22c55e;
+        }
+
+        .equal:hover {
+            background: #16a34a;
+        }
+
+        .zero {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 400px) {
+
+            .calculator {
+                width: 92%;
+                padding: 15px;
+            }
+
+            button {
+                height: 60px;
+            }
+
+            #current {
+                font-size: 34px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         HTML
+    ========================= -->
+
+    <div class="calculator">
+
+        <h2 class="title">Calculator</h2>
+
+        <div class="display">
+
+            <div id="previous"></div>
+
+            <div id="current">0</div>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                class="special"
+                onclick="clearCalculator()">
+                AC
+            </button>
+
+            <button
+                class="special"
+                onclick="deleteNumber()">
+                DEL
+            </button>
+
+            <button
+                class="special"
+                onclick="percentage()">
+                %
+            </button>
+
+            <button
+                class="operator"
+                onclick="chooseOperation('÷')">
+                ÷
+            </button>
+
+
+            <button onclick="addNumber('7')">
+                7
+            </button>
+
+            <button onclick="addNumber('8')">
+                8
+            </button>
+
+            <button onclick="addNumber('9')">
+                9
+            </button>
+
+            <button
+                class="operator"
+                onclick="chooseOperation('×')">
+                ×
+            </button>
+
+
+            <button onclick="addNumber('4')">
+                4
+            </button>
+
+            <button onclick="addNumber('5')">
+                5
+            </button>
+
+            <button onclick="addNumber('6')">
+                6
+            </button>
+
+            <button
+                class="operator"
+                onclick="chooseOperation('−')">
+                −
+            </button>
+
+
+            <button onclick="addNumber('1')">
+                1
+            </button>
+
+            <button onclick="addNumber('2')">
+                2
+            </button>
+
+            <button onclick="addNumber('3')">
+                3
+            </button>
+
+            <button
+                class="operator"
+                onclick="chooseOperation('+')">
+                +
+            </button>
+
+
+            <button
+                class="zero"
+                onclick="addNumber('0')">
+                0
+            </button>
+
+            <button onclick="addNumber('.')">
+                .
+            </button>
+
+            <button
+                class="equal"
+                onclick="calculate()">
+                =
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        /* =========================
+           JAVASCRIPT
+        ========================= */
+
+        const currentDisplay =
+            document.getElementById("current");
+
+        const previousDisplay =
+            document.getElementById("previous");
+
+
+        let currentNumber = "";
+
+        let previousNumber = "";
+
+        let operation = null;
+
+
+        // Update calculator display
+
+        function updateDisplay() {
+
+            currentDisplay.textContent =
+                currentNumber || "0";
+
+            previousDisplay.textContent =
+                previousNumber && operation
+                    ? `${previousNumber} ${operation}`
+                    : "";
+
+        }
+
+
+        // Add number
+
+        function addNumber(number) {
+
+            if (
+                number === "." &&
+                currentNumber.includes(".")
+            ) {
+                return;
+            }
+
+
+            if (
+                currentNumber === "0" &&
+                number !== "."
+            ) {
+                currentNumber = number;
+            }
+
+            else {
+                currentNumber += number;
+            }
+
+
+            updateDisplay();
+
+        }
+
+
+        // Choose operation
+
+        function chooseOperation(operator) {
+
+            if (currentNumber === "") {
+                return;
+            }
+
+
+            if (previousNumber !== "") {
+                calculate();
+            }
+
+
+            operation = operator;
+
+            previousNumber = currentNumber;
+
+            currentNumber = "";
+
+
+            updateDisplay();
+
+        }
+
+
+        // Calculate result
+
+        function calculate() {
+
+            if (
+                previousNumber === "" ||
+                currentNumber === "" ||
+                operation === null
+            ) {
+                return;
+            }
+
+
+            const previous =
+                parseFloat(previousNumber);
+
+            const current =
+                parseFloat(currentNumber);
+
+
+            let result;
+
+
+            switch (operation) {
+
+                case "+":
+                    result = previous + current;
+                    break;
+
+
+                case "−":
+                    result = previous - current;
+                    break;
+
+
+                case "×":
+                    result = previous * current;
+                    break;
+
+
+                case "÷":
+
+                    if (current === 0) {
+
+                        currentNumber = "Error";
+
+                        previousNumber = "";
+
+                        operation = null;
+
+                        updateDisplay();
+
+                        return;
+                    }
+
+                    result = previous / current;
+
+                    break;
+
+            }
+
+
+            currentNumber =
+                Number(result.toFixed(10)).toString();
+
+
+            previousNumber = "";
+
+            operation = null;
+
+
+            updateDisplay();
+
+        }
+
+
+        // Clear calculator
+
+        function clearCalculator() {
+
+            currentNumber = "";
+
+            previousNumber = "";
+
+            operation = null;
+
+
+            updateDisplay();
+
+        }
+
+
+        // Delete last number
+
+        function deleteNumber() {
+
+            currentNumber =
+                currentNumber.slice(0, -1);
+
+
+            updateDisplay();
+
+        }
+
+
+        // Percentage
+
+        function percentage() {
+
+            if (currentNumber === "") {
+                return;
+            }
+
+
+            currentNumber =
+                (
+                    parseFloat(currentNumber) / 100
+                ).toString();
+
+
+            updateDisplay();
+
+        }
+
+
+        // Keyboard support
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key >= "0" &&
+                    event.key <= "9"
+                ) {
+
+                    addNumber(event.key);
+
+                }
+
+
+                if (event.key === ".") {
+
+                    addNumber(".");
+
+                }
+
+
+                if (event.key === "+") {
+
+                    chooseOperation("+");
+
+                }
+
+
+                if (event.key === "-") {
+
+                    chooseOperation("−");
+
+                }
+
+
+                if (event.key === "*") {
+
+                    chooseOperation("×");
+
+                }
+
+
+                if (event.key === "/") {
+
+                    event.preventDefault();
+
+                    chooseOperation("÷");
+
+                }
+
+
+                if (
+                    event.key === "Enter" ||
+                    event.key === "="
+                ) {
+
+                    calculate();
+
+                }
+
+
+                if (event.key === "Backspace") {
+
+                    deleteNumber();
+
+                }
+
+
+                if (event.key === "Escape") {
+
+                    clearCalculator();
+
+                }
+
+
+                if (event.key === "%") {
+
+                    percentage();
+
+                }
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
